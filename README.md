@@ -43,15 +43,15 @@ macOS / Linux:
 ```bash
 cd backend
 source .venv/bin/activate
-python run.py
+uvicorn app.main:app --reload --port 8000
 ```
 Windows (PowerShell):
 ```powershell
 cd backend
 .venv\Scripts\activate
-python run.py
+uvicorn app.main:app --reload --port 8000
 ```
-`python run.py` works on every OS. On Windows use it instead of plain `uvicorn`, which breaks the Postgres driver. For auto-reload: `RELOAD=1 python run.py` (macOS/Linux) or `$env:RELOAD="1"; python run.py` (PowerShell).
+Keep `--reload` on Windows: without it uvicorn uses an event loop the Postgres driver can't run on. If you must run without reload on Windows, use `python run.py` instead.
 Check it works: open http://localhost:8000/health (should show `{"ok":true}`). API docs: http://localhost:8000/docs.
 
 **Terminal 2: frontend (app on http://localhost:3000)**

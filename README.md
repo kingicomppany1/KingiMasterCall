@@ -3,17 +3,73 @@
 - `frontend/` – Next.js 15 (login via Supabase Auth, all data via the API)
 - `backend/` – FastAPI + Postgres (Supabase-hosted), Africa's Talking Voice
 
-## Setup
+## One-time setup
 
 1. **Database**: in Supabase, run `backend/migrations/0001_init.sql` (SQL editor).
-2. **Backend**: `cd backend && cp .env.example .env` (fill in), then
-   `.venv\Scripts\activate && python run.py` (on Windows use `run.py`, not plain `uvicorn`, which breaks the Postgres driver; set `RELOAD=1` for auto-reload; on Render/Linux `uvicorn app.main:app --host 0.0.0.0 --port $PORT` is fine) (venv already created; else `python -m venv .venv && pip install -r requirements.txt`).
-3. **Frontend**: `cd frontend && cp .env.example .env.local` (fill in), `npm run dev`.
-4. **First admin**: create a user in Supabase Auth, then in SQL:
+2. **Backend env**: copy `backend/.env.example` to `backend/.env` and fill it in.
+3. **Frontend env**: copy `frontend/.env.example` to `frontend/.env` and fill it in.
+4. **First admin**: create a user in Supabase (Authentication → Users → Add user, tick Auto confirm), then run in the SQL editor:
    `update profiles set role = 'admin' where id = '<user uuid>';`
    Agents are then created from Team Overview → Add agent.
-5. **Africa's Talking**: set the Voice callback URL to
-   `https://<api-host>/at/voice?secret=<AT_WEBHOOK_SECRET>` (needs a public URL; use a tunnel such as ngrok locally).
+5. **Backend dependencies** (first time only). Needs Python 3.11+ (`brew install python` on macOS):
+
+   macOS / Linux:
+   ```bash
+   cd backend
+   cp .env.example .env          # then fill it in
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
+   Windows (PowerShell):
+   ```powershell
+   cd backend
+   python -m venv .venv
+   .venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
+6. **Frontend dependencies** (first time only). Needs Node 20+ (`brew install node` on macOS):
+   ```bash
+   cd frontend
+   cp .env.example .env          # then fill it in (macOS/Linux; on Windows use Copy-Item)
+   npm install
+   ```
+
+## Run both servers (two terminals)
+
+**Terminal 1: backend (API on http://localhost:8000)**
+
+macOS / Linux:
+```bash
+cd backend
+source .venv/bin/activate
+python run.py
+```
+Windows (PowerShell):
+```powershell
+cd backend
+.venv\Scripts\activate
+python run.py
+```
+`python run.py` works on every OS. On Windows use it instead of plain `uvicorn`, which breaks the Postgres driver. For auto-reload: `RELOAD=1 python run.py` (macOS/Linux) or `$env:RELOAD="1"; python run.py` (PowerShell).
+Check it works: open http://localhost:8000/health (should show `{"ok":true}`). API docs: http://localhost:8000/docs.
+
+**Terminal 2: frontend (app on http://localhost:3000)**
+```bash
+cd frontend
+npm run dev
+```
+Open http://localhost:3000 and sign in. Restart `npm run dev` after changing `frontend/.env`, and restart the backend after changing `backend/.env`.
+
+## Production (Render)
+
+- Backend: root `backend`, build `pip install -r requirements.txt`, start `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
+- Frontend: root `frontend`, build `npm install && npm run build`, start `npm start`.
+- Set the same variables as the `.env.example` files in each service's Environment tab. `NEXT_PUBLIC_*` values are baked in at build time, so redeploy the frontend after changing them. Set the backend's `CORS_ORIGINS` to the frontend URL.
+
+## Africa's Talking
+
+Set the Voice callback URL to `https://<api-host>/at/voice?secret=<AT_WEBHOOK_SECRET>`. It must be a public URL; locally, use a tunnel such as `ngrok http 8000`.
 
 ## How the "can't fake it" rules work
 

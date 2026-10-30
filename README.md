@@ -7,7 +7,7 @@
 
 1. **Database**: in Supabase, run `backend/migrations/0001_init.sql` (SQL editor).
 2. **Backend**: `cd backend && cp .env.example .env` (fill in), then
-   `.venv\Scripts\activate && uvicorn app.main:app --reload` (venv already created; else `python -m venv .venv && pip install -r requirements.txt`).
+   `.venv\Scripts\activate && python run.py` (on Windows use `run.py`, not plain `uvicorn`, which breaks the Postgres driver; set `RELOAD=1` for auto-reload; on Render/Linux `uvicorn app.main:app --host 0.0.0.0 --port $PORT` is fine) (venv already created; else `python -m venv .venv && pip install -r requirements.txt`).
 3. **Frontend**: `cd frontend && cp .env.example .env.local` (fill in), `npm run dev`.
 4. **First admin**: create a user in Supabase Auth, then in SQL:
    `update profiles set role = 'admin' where id = '<user uuid>';`

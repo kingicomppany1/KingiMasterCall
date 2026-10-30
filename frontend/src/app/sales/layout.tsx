@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { KeyRound, LayoutDashboard, LogOut, Menu, Phone, X } from "lucide-react";
+import { Building2, KeyRound, LayoutDashboard, LogOut, Menu, Phone, Upload, Users, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { createClient } from "@/lib/supabase/browser";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -33,6 +33,9 @@ export default function SalesLayout({ children }: { children: React.ReactNode })
   const items = [
     me.role === "sales_agent" && { href: "/sales/my-calls", label: "My Calls", Icon: Phone },
     me.role === "admin" && { href: "/sales/team", label: "Team Overview", Icon: LayoutDashboard },
+    me.role === "admin" && { href: "/sales/agents", label: "Agents", Icon: Users },
+    me.role === "admin" && { href: "/sales/companies", label: "Companies", Icon: Building2 },
+    me.role === "admin" && { href: "/sales/import", label: "Import list", Icon: Upload },
     { href: "/sales/account", label: "Change password", Icon: KeyRound },
   ].filter(Boolean) as { href: string; label: string; Icon: typeof Phone }[];
 

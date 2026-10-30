@@ -1,22 +1,11 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight, Users } from "lucide-react";
-import { api } from "@/lib/api";
 import { fmtDuration, ngn } from "@/lib/common";
 import { Alert, Card, EmptyState, PageSkeleton, Pill, Stat } from "@/components/ui";
-import { AgentControls, AssignPanel, ImportForm, NewAgentForm } from "./Controls";
+import { useOverview } from "./useOverview";
 
-type Day = {
-  calls: number; talk_sec: number; answered: number; answered_pct: number; cost: number;
-  counts: Record<string, number>; no_outcome: number; short_calls: number;
-  flags: { missing_outcome: boolean; short_calls: boolean; mostly_no_answer: boolean };
-};
-type Overview = {
-  date: string;
-  outcomes: string[];
-  agents: { id: string; name: string; active: boolean; daily_cap: number; monthly_cap: number; month_spend: number; day: Day }[];
-  companies: { key: string; name: string; contacts: number; owner: string | null }[];
-};
 const label = (o: string) => o.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
 
 function shiftDay(iso: string, by: number) {
@@ -30,23 +19,13 @@ function prettyDate(iso: string) {
 
 export default function Team() {
   const [date, setDate] = useState("");
-  const [d, setD] = useState<Overview | null>(null);
-  const [err, setErr] = useState("");
-  const [busy, setBusy] = useState(false);
-  const load = useCallback(() => {
-    setBusy(true);
-    api<Overview>(`/admin/overview${date ? `?date_=${date}` : ""}`)
-      .then((o) => { setD(o); setErr(""); })
-      .catch((e) => setErr(e.message))
-      .finally(() => setBusy(false));
-  }, [date]);
-  useEffect(load, [load]);
+  const { d, err, busy, reload } = useOverview(date);
 
   if (err && !d) {
     return (
       <Card>
         <Alert tone="bad">{err}</Alert>
-        <div style={{ marginTop: 12 }}><button onClick={load}>Try again</button></div>
+        <div style={{ marginTop: 12 }}><button onClick={reload}>Try again</button></div>
       </Card>
     );
   }
@@ -60,7 +39,7 @@ export default function Team() {
   const rate = tot.calls ? Math.round((tot.answered / tot.calls) * 100) : 0;
 
   return (
-    <>
+    <div className="fill-page">
       <div className="page-head">
         <div>
           <h1>Team Overview</h1>
@@ -74,7 +53,7 @@ export default function Team() {
       </div>
       {err && <Alert tone="bad">{err}</Alert>}
 
-      <div className={busy ? "refreshing" : undefined} aria-busy={busy}>
+      <div className={`col${busy ? " refreshing" : ""}`} aria-busy={busy}>
         <div className="grid stats">
           <Stat label="Calls" value={tot.calls} sub={prettyDate(cur)} />
           <Stat label="Talk time" value={fmtDuration(tot.talk)} />
@@ -82,7 +61,7 @@ export default function Team() {
           <Stat label="Cost" value={ngn(tot.cost)} />
         </div>
 
-        <Card title="Performance by agent" subtitle={prettyDate(cur)} flush>
+        <Card title="Performance by agent" subtitle={prettyDate(cur)} flush grow>
           <div className="table-wrap">
             <table>
               <thead>
@@ -117,33 +96,16 @@ export default function Team() {
               </tbody>
             </table>
             {!d.agents.length && (
-              <EmptyState icon={<Users size={20} />} title="No agents yet" hint="Add your first sales agent in the Add agent card below to start tracking calls." />
+              <EmptyState
+                icon={<Users size={20} />}
+                title="No agents yet"
+                hint="Add your first sales agent to start tracking calls."
+                action={<Link href="/sales/agents" className="btn primary" style={{ marginTop: 8 }}>Add an agent</Link>}
+              />
             )}
           </div>
         </Card>
-
-        <Card title="Budget & access" subtitle="Spending limits and who can place calls." flush>
-          <div className="table-wrap">
-            <table>
-              <thead><tr><th>Agent</th><th>Month spend</th><th>Daily cap ₦</th><th>Monthly cap ₦</th><th>Calling</th><th></th></tr></thead>
-              <tbody>
-                {d.agents.map((a) => (
-                  <AgentControls key={a.id} onChanged={load} spent={a.month_spend}
-                    agent={{ id: a.id, name: a.name, active: a.active, daily: a.daily_cap, monthly: a.monthly_cap }} />
-                ))}
-              </tbody>
-            </table>
-            {!d.agents.length && <EmptyState title="Nothing to manage yet" />}
-          </div>
-        </Card>
-
-        <NewAgentForm onChanged={load} />
-
-        <div className="two even">
-          <AssignPanel onChanged={load} companies={d.companies} agents={d.agents.map((a) => ({ id: a.id, name: a.name }))} />
-          <ImportForm onChanged={load} />
-        </div>
       </div>
-    </>
+    </div>
   );
 }

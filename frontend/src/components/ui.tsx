@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 
 export function Card({
-  title, subtitle, action, children, flush,
-}: { title?: ReactNode; subtitle?: ReactNode; action?: ReactNode; children: ReactNode; flush?: boolean }) {
+  title, subtitle, action, children, flush, grow,
+}: { title?: ReactNode; subtitle?: ReactNode; action?: ReactNode; children: ReactNode; flush?: boolean; grow?: boolean }) {
   return (
-    <section className="card panel">
+    <section className={`card panel${grow ? " grow" : ""}`}>
       {(title || action) && (
         <header className="card-head">
           <div>

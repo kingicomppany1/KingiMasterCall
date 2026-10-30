@@ -158,7 +158,7 @@ export function NewAgentForm({ onChanged }: { onChanged: () => void }) {
           <Field label="Temporary password" hint="At least 8 characters">
             <input type="password" minLength={8} required value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} />
           </Field>
-          <div style={{ paddingBottom: 21 }}><button className="primary" disabled={busy}>{busy ? "Creating…" : "Create agent"}</button></div>
+          <div className="form-action"><button className="primary" disabled={busy}>{busy ? "Creating…" : "Create agent"}</button></div>
         </div>
         {note && <Alert tone={note.tone}>{note.text}</Alert>}
       </form>

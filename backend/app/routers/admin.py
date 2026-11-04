@@ -25,7 +25,7 @@ async def overview(date_: str | None = None):
 
     agents = await fetch_all("select * from profiles where role = 'sales_agent' order by full_name")
     logs = await fetch_all(
-        """select l.id, l.agent_id, l.duration_sec, l.answered, l.cost_ngn, l.ended_at, o.outcome::text as outcome
+        """select l.id, l.agent_id, l.duration_sec, l.answered, l.cost_ngn, l.ended_at, o.outcome::text as outcome, o.deal_value_usd
            from call_logs l left join call_outcomes o on o.call_log_id = l.id
            where l.started_at >= %s and l.started_at < %s""",
         (start, end),

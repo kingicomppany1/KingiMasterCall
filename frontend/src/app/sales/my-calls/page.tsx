@@ -5,7 +5,7 @@ import { fmtDuration, ngn } from "@/lib/common";
 import Dialer, { type ContactRow } from "./Dialer";
 import Script from "./Script";
 
-type Summary = { calls: number; talk_sec: number; answered_pct: number; meetings: number; deals: number };
+type Summary = { calls: number; talk_sec: number; answered_pct: number; meetings: number; deals: number; deal_value_usd: number };
 type Dash = {
   active: boolean;
   caps: { daily: number; monthly: number };
@@ -40,6 +40,7 @@ export default function MyCalls() {
           <Stat l="Answered (week)" v={`${d.week.answered_pct}%`} />
           <Stat l="Meetings (week)" v={d.week.meetings} />
           <Stat l="Deals (week)" v={d.week.deals} />
+          <Stat l="Deal value (week)" v={`$${d.week.deal_value_usd.toLocaleString("en-US")}`} />
         </div>
       </div>
       <div className="two">

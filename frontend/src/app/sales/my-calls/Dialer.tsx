@@ -34,6 +34,8 @@ export default function Dialer({ contacts, disabled, onChanged }: { contacts: Co
   const [outcome, setOutcome] = useState<OutcomeValue | "">("");
   const [callbackAt, setCallbackAt] = useState("");
   const [notes, setNotes] = useState("");
+  const [dealValue, setDealValue] = useState("");
+  const [dealType, setDealType] = useState<"cash" | "in_kind">("cash");
   const [saving, setSaving] = useState(false);
 
   const checkPending = useCallback(async () => {
@@ -123,6 +125,8 @@ export default function Dialer({ contacts, disabled, onChanged }: { contacts: Co
           outcome,
           callback_at: callbackAt ? new Date(callbackAt).toISOString() : null,
           notes,
+          deal_value_usd: outcome === "deal_closed" ? Number(dealValue) : null,
+          deal_type: outcome === "deal_closed" ? dealType : null,
         },
       });
     } catch (e) {
@@ -134,6 +138,8 @@ export default function Dialer({ contacts, disabled, onChanged }: { contacts: Co
     setOutcome("");
     setCallbackAt("");
     setNotes("");
+    setDealValue("");
+    setDealType("cash");
     setPhase("idle");
     setActive(null);
     onChanged();
@@ -182,6 +188,17 @@ export default function Dialer({ contacts, disabled, onChanged }: { contacts: Co
             <>
               <label htmlFor="cb">Call back on</label>
               <input id="cb" type="datetime-local" required value={callbackAt} onChange={(e) => setCallbackAt(e.target.value)} />
+            </>
+          )}
+          {outcome === "deal_closed" && (
+            <>
+              <label htmlFor="dv">Deal value (US dollars)</label>
+              <input id="dv" type="number" min="1" step="0.01" required value={dealValue} onChange={(e) => setDealValue(e.target.value)} />
+              <label htmlFor="dt">Type of deal</label>
+              <select id="dt" value={dealType} onChange={(e) => setDealType(e.target.value as "cash" | "in_kind")}>
+                <option value="cash">Cash</option>
+                <option value="in_kind">In kind (goods or services)</option>
+              </select>
             </>
           )}
           <label htmlFor="notes">Notes</label>

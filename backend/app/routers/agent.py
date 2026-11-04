@@ -32,7 +32,7 @@ async def dashboard(me: dict = Depends(require_agent)):
     )
     logs = await fetch_all(
         """
-        select l.id, l.duration_sec, l.answered, l.cost_ngn, l.started_at, l.ended_at, o.outcome::text as outcome
+        select l.id, l.duration_sec, l.answered, l.cost_ngn, l.started_at, l.ended_at, o.outcome::text as outcome, o.deal_value_usd
         from call_logs l left join call_outcomes o on o.call_log_id = l.id
         where l.agent_id = %s and l.started_at >= %s
         """,

@@ -20,6 +20,16 @@ const SCRIPTS = {
     ],
     close: "Shall I email details and set a short intro call?",
   },
+  // Drafts: the Head of Sales should edit these before agents use them.
+  "Radio & blogs": {
+    opener: "Hello, this is {your name} from KingiMaster. Do you have a minute? We're a three-day live rap battle in December and I'd like to talk about coverage.",
+    points: [
+      "Who is the right person for music or entertainment features?",
+      "Would an interview with one of our artists, or a competition for your listeners, fit your schedule?",
+      "We can send artist profiles, photos and the event dates today.",
+    ],
+    close: "Can I email you the press details today and follow up this week?",
+  },
 } as const;
 
 export default function Script() {

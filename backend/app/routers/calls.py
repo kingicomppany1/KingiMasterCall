@@ -99,6 +99,8 @@ class OutcomeBody(BaseModel):
     outcome: str
     callback_at: datetime | None = None
     notes: str | None = None
+    deal_value_usd: float | None = None
+    deal_type: str | None = None  # 'cash' | 'in_kind', needed when a deal is closed
 
 
 @router.post("/outcome")
@@ -116,14 +118,22 @@ async def outcome(body: OutcomeBody, me: dict = Depends(require_agent)):
     if not log["ended_at"]:
         raise HTTPException(409, "Call has not ended yet")
 
+    deal_value = deal_type = None
+    if body.outcome == "deal_closed":
+        if body.deal_type not in ("cash", "in_kind"):
+            raise HTTPException(400, "Say whether the deal is cash or in kind")
+        if not body.deal_value_usd or body.deal_value_usd <= 0:
+            raise HTTPException(400, "Enter the deal value in US dollars")
+        deal_value, deal_type = round(body.deal_value_usd, 2), body.deal_type
+
     status, stop_seq = OUTCOME_EFFECT[body.outcome]
     cb = body.callback_at if body.outcome == "call_back" else None
     async with pool.connection() as conn:
         async with conn.transaction():
             cur = await conn.execute(
-                """insert into call_outcomes (call_log_id, agent_id, outcome, callback_at, notes)
-                   values (%s,%s,%s,%s,%s) on conflict do nothing""",
-                (log["id"], me["id"], body.outcome, cb, (body.notes or "")[:2000] or None),
+                """insert into call_outcomes (call_log_id, agent_id, outcome, callback_at, notes, deal_value_usd, deal_type)
+                   values (%s,%s,%s,%s,%s,%s,%s) on conflict do nothing""",
+                (log["id"], me["id"], body.outcome, cb, (body.notes or "")[:2000] or None, deal_value, deal_type),
             )
             if cur.rowcount == 0:
                 raise HTTPException(409, "Outcome already recorded")

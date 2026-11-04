@@ -65,6 +65,7 @@ def summarize(logs: list[dict]) -> dict:
         "cost": float(sum(l["cost_ngn"] for l in logs)),
         "meetings": counts.get("meeting_booked", 0),
         "deals": counts.get("deal_closed", 0),
+        "deal_value_usd": float(sum(l.get("deal_value_usd") or 0 for l in logs)),
         "counts": counts,
         "no_outcome": no_outcome,
         "short_calls": short,
